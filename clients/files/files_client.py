@@ -1,6 +1,7 @@
 from typing import TypedDict
 from httpx import Response
 from clients.api_client import APIClient
+from clients.private_http_builder import get_private_http_client, AuthenticationUserDict
 
 class CreateFileRequestDict(TypedDict):
     '''
@@ -47,3 +48,7 @@ class FilesClient(APIClient):
         '''
 
         return self.delete(f'/api/v1/files/{file_id}')
+
+
+def get_files_client(user: AuthenticationUserDict) -> FilesClient:
+    return FilesClient(client=get_private_http_client(user))
