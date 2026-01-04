@@ -37,6 +37,52 @@ class UpdateExeciseRequestDict(TypedDict):
     estimatedTime: str | None
 
 
+class Exercise(TypedDict):
+    id: str
+    title: str
+    courseId: str
+    maxScore: int
+    minScore: int
+    orderIndex: int
+    description: str
+    estimatedTime: str
+
+class GetExercisesResponseDict(TypedDict):
+    exercises: list[Exercise]
+
+
+class GetExerciseResponseDict(TypedDict):
+    exercise: Exercise
+
+
+class CreateExercise(TypedDict):
+    id: str
+    title: str
+    courseId: str
+    maxScore: int
+    minScore: int
+    orderIndex: int
+    description: str
+    estimatedTime: str
+
+class CreateExerciseResponseDict(TypedDict):
+    exercise: CreateExercise
+
+
+class UpdateExercise(TypedDict):
+    id: str
+    title: str
+    courseId: str
+    maxScore: int
+    minScore: int
+    orderIndex: int
+    description: str
+    estimatedTime: str
+
+
+class UpdateExerciseResponseDict(TypedDict):
+    exercise: UpdateExercise
+
 class ExercisesClient(APIClient):
     '''
     API клиент для работы с /api/v1/exercises
@@ -109,6 +155,21 @@ class ExercisesClient(APIClient):
 
         return self.delete(f'/api/v1/exercises/{exercise_id}')
 
+    def get_exercises(self, query: GetExercisesQueryDict) -> GetExercisesResponseDict:
+        response = self.get_exercises_api(query)
+        return response.json()
+
+    def get_exercise(self, exercise_id: str) -> GetExerciseResponseDict:
+        response = self.get_exercise_api(exercise_id)
+        return response.json()
+
+    def create_exercise(self, request: CreateExerciseRequestDict) -> CreateExerciseResponseDict:
+        response = self.create_exercise_api(request)
+        return response.json()
+
+    def update_exercise(self, exercise_id: str, request: UpdateExeciseRequestDict) -> UpdateExerciseResponseDict:
+        response = self.update_exercise_api(exercise_id, request)
+        return response.json()
 
 def get_exercises_client(user: AuthenticationUserDict) -> ExercisesClient:
     return ExercisesClient(client=get_private_http_client(user))
