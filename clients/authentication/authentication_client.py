@@ -1,35 +1,13 @@
 from clients.api_client import APIClient
 from clients.public_http_builder import get_public_http_client
 from httpx import Response
-from typing import TypedDict
 
+from clients.authentication.authentication_schema import (
+    LoginRequestSchema,
+    LoginResponseSchema,
+    RefreshRequestSchema,
+)
 
-class LoginRequestDict(TypedDict):
-    """Структура запроса для аутентификации по email и паролю.
-
-    Attributes:
-        email (str): Адрес электронной почты пользователя.
-        password (str): Пароль в открытом виде (должен передаваться по HTTPS!).
-    """
-    email: str
-    password: str
-
-
-class RefreshRequestDict(TypedDict):
-    """Структура запроса для обновления access-токена.
-
-    Attributes:
-        refreshToken (str): Действующий refresh token, выданный при логине.
-    """
-    refreshToken: str
-
-class Token(TypedDict):
-    tokenType: str
-    accessToken: str
-    refreshToken: str
-
-class LoginResponseDict(TypedDict):
-    token: Token
 
 class AuthenticationClient(APIClient):
     """Клиент для работы с эндпоинтами аутентификации.
@@ -44,7 +22,7 @@ class AuthenticationClient(APIClient):
         >>> tokens = resp.json()
     """
 
-    def login_api(self, request: LoginRequestDict) -> Response:
+    def login_api(self, request: LoginRequestSchema) -> Response:
         """Выполняет аутентификацию пользователя по email и паролю.
 
         POST /api/v1/authentication/login
@@ -53,8 +31,8 @@ class AuthenticationClient(APIClient):
         Успешный ответ возвращает access и refresh токены.
 
         Args:
-            request (LoginRequestDict): Данные для входа.
-                См. `LoginRequestDict` для структуры.
+            request (LoginRequestSchema): Данные для входа.
+                См. `LoginRequestSchema` для структуры.
 
         Returns:
             httpx.Response: Ответ сервера.
@@ -68,15 +46,15 @@ class AuthenticationClient(APIClient):
             httpx.RequestError: При сетевых ошибках.
             httpx.HTTPStatusError: При HTTP-ошибках (400, 401, 500 и т.д.).
         """
-        return self.post("/api/v1/authentication/login", json=request)
+        return self.post("/api/v1/authentication/login", json=request.model_dump(by_alias=True))
 
-    def refresh_api(self, request: RefreshRequestDict) -> Response:
+    def refresh_api(self, request: RefreshRequestSchema) -> Response:
         """Обновляет access-токен с использованием refresh-токена.
 
         POST /api/v1/authentication/refresh
 
         Args:
-            request (RefreshRequestDict): Объект с `refreshToken`.
+            request (RefreshRequestSchema): Объект с `refreshToken`.
 
         Returns:
             httpx.Response: Ответ сервера.
@@ -86,12 +64,12 @@ class AuthenticationClient(APIClient):
             httpx.RequestError: При сетевых ошибках.
             httpx.HTTPStatusError: При недействительном/просроченном refresh-токене (401).
         """
-        return self.post("/api/v1/authentication/refresh", json=request)
+        return self.post("/api/v1/authentication/refresh", json=request.model_dump(by_alias=True))
 
 
-    def login(self, request: LoginRequestDict) -> LoginResponseDict:
+    def login(self, request: LoginRequestSchema) -> LoginResponseSchema:
         response = self.login_api(request)
-        return response.json()
+        return LoginResponseSchema.model_validate_json(response.text)
 
 
 
