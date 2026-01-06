@@ -1,71 +1,29 @@
-from typing import TypedDict
 from httpx import Response
 from clients.api_client import APIClient
-from clients.files.files_client import File
 from clients.private_http_builder import AuthenticationUserSchema, get_private_http_client
-from clients.users.private_users_client import User
-
-class GetCoursesQueryDict(TypedDict):
-    '''
-    Описание структуры запроса на получение списка курсов
-    '''
-
-    userId: str
+from clients.courses.courses_schema import (
+    GetCoursesQuerySchema,
+    CreateCourseRequestSchema,
+    UpdateCourseRequestSchema,
+    CreateCourseResponseSchema,
+)
 
 
-class CreateCourseRequestDict(TypedDict):
-    '''
-    Описание структуры запроса на создание курса
-    '''
-    title: str
-    maxScore: str
-    minScore: str
-    description: str
-    esimatedTime: str
-    previewFileId: str
-    createdByUserId: str
-
-
-class UpdateCourseRequestDict(TypedDict):
-    '''
-    Описание структуры запроса на обновление курса
-    '''
-
-    title: str | None
-    maxScore: str | None
-    minScore: str | None
-    description: str | None
-    estimatedTime: str | None
-
-
-class Course(TypedDict):
-    id: str
-    title: str
-    maxScore: int
-    minScore: int
-    description: str
-    previewFile: File
-    estimatedTime: str
-    createdByUser: User
-
-
-class CreateCourseResponseDict(TypedDict):
-    course: Course
 
 class CoursesClient(APIClient):
     '''
     API клиент для работы с /api/v1/courses
     '''
 
-    def get_courses_api(self, query: GetCoursesQueryDict) -> Response:
-        '''
-        Метод получения списка курсов
+    def get_courses_api(self, query: GetCoursesQuerySchema) -> Response:
+        """
+        Метод получения списка курсов.
 
-        :param query: Словарь с userId
+        :param query: Словарь с userId.
         :return: Ответ от сервера в виде объекта httpx.Response
-        '''
+        """
 
-        return self.get('/api/v1/courses', params=query)
+        return self.get('/api/v1/courses', params=query.model_dump(by_alias=True))
 
     def get_course_api(self, course_id: str) -> Response:
         '''
@@ -77,7 +35,7 @@ class CoursesClient(APIClient):
 
         return self.get(f'/api/v1/courses/{course_id}')
 
-    def create_course_api(self, request: CreateCourseRequestDict) -> Response:
+    def create_course_api(self, request: CreateCourseRequestSchema) -> Response:
         '''
         Метод создания курса.
 
@@ -85,9 +43,9 @@ class CoursesClient(APIClient):
         :return:  Ответ от сервера в виде объекта httpx.Response
         '''
 
-        return self.post('/api/v1/courses', json=request)
+        return self.post('/api/v1/courses', json=request.model_dump(by_alias=True))
 
-    def update_course_api(self, course_id: str, request: UpdateCourseRequestDict) -> Response:
+    def update_course_api(self, course_id: str, request: UpdateCourseRequestSchema) -> Response:
         '''
         Метод обновления курса.
 
@@ -96,7 +54,7 @@ class CoursesClient(APIClient):
         :return: Ответ от сервера в виде объекта httpx.Response
         '''
 
-        return self.patch(f'/api/v1/courses/{course_id}', json=request)
+        return self.patch(f'/api/v1/courses/{course_id}', json=request.model_dump(by_alias=True))
 
     def delete_course_api(self, course_id: str) -> Response:
         '''
@@ -108,9 +66,9 @@ class CoursesClient(APIClient):
 
         return self.delete(f'/api/v1/courses/{course_id}')
 
-    def create_course(self, request: CreateCourseRequestDict) -> CreateCourseResponseDict:
+    def create_course(self, request: CreateCourseRequestSchema) -> CreateCourseResponseSchema:
         response = self.create_course_api(request)
-        return response.json()
+        return CreateCourseResponseSchema.model_validate_json(response.text)
 
 
 def get_courses_client(user: AuthenticationUserSchema) -> CoursesClient:
