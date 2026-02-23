@@ -29,3 +29,17 @@ def assert_equal(actual, expected, name):
         f'Ожидаемое значение: {expected}'
         f'Возвращенное значение: {actual}'
     )
+
+def assert_is_true(actual, name):
+    """
+    Проверяет, что фактическое значение является истинным.
+
+    :param name: Название проверяемого значения.
+    :param actual: Фактическое значение.
+    :raises AssertionError: Если фактическое значение ложно.
+    """
+
+    assert actual, (
+        f'Некорректное поле {name}'
+        f'Ожидаемый статус True, но получен {actual}'
+    )

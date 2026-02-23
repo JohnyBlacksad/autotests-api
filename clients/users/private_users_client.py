@@ -56,5 +56,5 @@ class PrivateUsersClient(APIClient):
         return GetUserResponseSchema.model_validate_json(response.text)
 
 
-def get_private_user_client(user: AuthenticationUserSchema) -> PrivateUsersClient:
+def get_private_users_client(user: AuthenticationUserSchema) -> PrivateUsersClient:
     return PrivateUsersClient(client=get_private_http_client(user))
