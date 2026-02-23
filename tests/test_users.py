@@ -1,0 +1,23 @@
+from http import HTTPStatus
+from clients.users.public_users_client import get_public_users_client
+from clients.users.users_schema import CreateUserRequestSchema, CreateUserResponseSchema
+from tools.assertions.schema import validate_json_schema
+from tools.assertions.base import assert_status_code
+from tools.assertions.users import assert_create_user_response
+
+def test_create_user(subtests):
+    public_user_client = get_public_users_client()
+
+    request = CreateUserRequestSchema()
+
+    response = public_user_client.create_user_api(request)
+
+    response_data = CreateUserResponseSchema.model_validate_json(response.text)
+    with subtests.test(msg='Проверка статус кода ответа'):
+        assert_status_code(response.status_code, HTTPStatus.OK)
+
+    with subtests.test(msg='Проверка значения полей'):
+        assert_create_user_response(request, response_data)
+
+    with subtests.test(msg='Проверка валидации ответа сервера'):
+        validate_json_schema(response.json(), response_data.model_json_schema())
