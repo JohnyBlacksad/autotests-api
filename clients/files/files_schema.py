@@ -23,3 +23,11 @@ class FileSchema(BaseModel):
 class CreateFileResponseSchema(BaseModel):
 
     file: FileSchema
+
+# Остальной код без изменений
+
+class GetFileResponseSchema(BaseModel):
+    """
+    Описание структуры запроса получения файла.
+    """
+    file: FileSchema
